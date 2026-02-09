@@ -1,0 +1,163 @@
+# Cursor AI Rules for Booker Project
+
+## 🔴 CRITICAL: Before Creating New Code
+
+### Checklist Before Starting
+1. **Check existing similar code** - Find patterns to follow
+2. **Review pattern files** - Check COMPONENT_PATTERNS.md, API_PATTERNS.md
+3. **Review common mistakes** - Check COMMON_MISTAKES.md to avoid known issues
+4. **Check guidelines** - Review LAYOUT_GUIDELINES.md, REACT_HOOKS_GUIDELINES.md
+5. **Verify build after changes** - Always run `npm run build` (see `.ai-instructions.md`)
+
+## React Development Rules
+
+### useEffect Dependencies - CRITICAL
+- NEVER use entire objects in useEffect dependency arrays when resetting forms
+- ALWAYS use primitive IDs: `[tenant?.id, reset]` NOT `[tenant, reset]`
+- Pattern: When resetting forms from props, only reset when entity ID changes
+- See: `frontend/src/pages/tenants/components/TenantSettingsTab.tsx` for correct pattern
+- See: `frontend/src/pages/tenants/components/TenantDetailsTab.tsx` for correct pattern
+- **Common Mistake**: See COMMON_MISTAKES.md #1
+
+### Layout Consistency - CRITICAL
+- ALL pages MUST use PageLayout with maxWidth="md" (except auth pages use "xs")
+- NEVER use Container directly - always use PageLayout
+- NEVER use maxWidth="lg" in page files
+- NEVER add nested maxWidth constraints to Paper/Card components
+- Reference: `frontend/LAYOUT_GUIDELINES.md`
+- **Common Mistakes**: See COMMON_MISTAKES.md #2, #3, #4, #5
+
+### Form Handling
+- Use React Hook Form with zodResolver
+- When resetting forms from props, use entity?.id in dependency array
+- Pattern matches: TenantDetailsTab, TenantSettingsTab
+- Reference: `frontend/REACT_HOOKS_GUIDELINES.md`
+- **Pattern**: See frontend/COMPONENT_PATTERNS.md - Form Component Pattern
+
+### Notifications - CRITICAL
+- ALWAYS use centralized notification system via `useNotification()` hook
+- NEVER create local Alert/Snackbar state for success/error messages
+- Use `showSuccess()`, `showError()`, `showWarning()`, `showInfo()` from `useNotification()`
+- Pattern: Import `useNotification` from `'../../../contexts'` (or appropriate path)
+- Reference: `frontend/COMPONENT_PATTERNS.md` - Notification Pattern
+- **Examples**: TenantSettingsTab, TenantDetailsTab, TenantMembersTab, BookingForm
+- **Common Mistake**: Creating local `error`/`success` state with Alert components
+
+## Code Quality
+- Always verify builds after changes (see `.ai-instructions.md`)
+- Follow TypeScript strict mode rules
+- Use existing patterns from codebase
+- Check existing similar components before creating new ones
+- **Never commit without build verification** - See COMMON_MISTAKES.md #6
+
+## Role & Permission Patterns (Project)
+- **Prefer permissions over role strings** when gating UI or routes
+- **Visibility**: show modules only when `*_READ` permission is present
+- **Edits**: allow create/update/delete only with `*_CREATE/UPDATE/DELETE`
+- **Settings**: gate tenant settings with `TENANT_SETTINGS`
+- **Members**: gate member management with `MEMBER_*`
+- **Mirror backend enforcement**: UI should reflect permission checks already enforced by APIs
+- **Role changes**: when adding roles, update RBAC maps and member role selectors
+
+## Rebuild After Code Changes
+**When to rebuild:**
+- **Frontend changes only**: Use `./scripts/build-frontend.sh` (~30-60s)
+- **Backend changes only (no new dependencies)**: Use `docker compose restart backend` (~10s)
+- **New dependency added** (requirements.txt, package.json): Use `./rebuild.sh` (~2-3min)
+- **Dockerfile changes**: Use `./rebuild.sh` (~2-3min)
+- **Verify build succeeded**: Use `./scripts/verify-build.sh` (~10-20s)
+
+**Quick Reference:**
+```bash
+# Most common (frontend changes)
+./scripts/build-frontend.sh && docker compose restart nginx
+
+# Backend only (no new deps)
+docker compose restart backend
+
+# Complete rebuild (new dependencies)
+./rebuild.sh
+```
+
+**See `.ai-instructions.md` for detailed rebuild workflow and scenarios.**
+
+## API Service Rules
+- ALWAYS use apiGet, apiPost, apiPatch, apiDelete from `frontend/src/services/api.ts`
+- NEVER use fetch directly - use centralized API functions
+- Follow existing API service patterns
+- Reference: `frontend/API_PATTERNS.md`
+- **Common Mistake**: See COMMON_MISTAKES.md #7
+
+## Backend Service Rules
+- Business logic goes in services, NOT in routers
+- Use dependency injection for database sessions
+- Follow existing service patterns
+- Reference: `backend/SERVICE_PATTERNS.md` (when created)
+- **Common Mistakes**: See COMMON_MISTAKES.md #9, #10
+
+## Pydantic Schema Rules
+- **Type hints**: ALWAYS use `Any` from `typing`, NEVER use lowercase `any`
+- **Empty string handling**: For Create schemas that allow empty strings (router generates defaults), use `@model_validator(mode='before')` with shared `convert_empty_string_to_space()` from `schemas/validators.py`
+- **Code reuse**: Extract common validator logic to shared utilities to reduce duplication
+- **Import types**: Always import `Any, Dict` from `typing` when using them
+- **Pattern**: See `backend/app/modules/ropa/schemas/activity.py` for correct Create schema pattern with validators
+- **Reference**: `ROPA_BEST_PRACTICES.md` - Pydantic Schemas section
+
+## ROPA Form Patterns
+- **Accept All button**: All ROPA form dialogs should include "Accept All" button in dialog title
+- **Field-specific join logic**: Multiline fields join with `\n\n`, text fields with `, `, arrays merge
+- **Job restoration**: Call `suggestionJob.restoreJobs()` in `useEffect` when dialog opens (with 100ms delay)
+- **Add New tree items**: Add contextual "Add New..." items as last children in tree views
+- **Create then open**: When adding new entity, create default entity first, then open form in edit mode
+- **Reference**: `ROPA_AI_SUGGESTIONS.md` - Accept All Functionality, Add New Entity Pattern sections
+- **Reference**: `frontend/COMPONENT_PATTERNS.md` - Accept All Suggestions Pattern, Add New Entity Pattern sections
+
+## Documentation References
+
+### Essential (Read First)
+- `.ai-instructions.md` - Build verification and React patterns
+- `COMMON_MISTAKES.md` - Mistakes to avoid (READ BEFORE CODING)
+- `AI_SUSTAINABLE_DEVELOPMENT_PLAN.md` - Overall AI development strategy
+
+### Pattern Libraries (Reference When Creating Code)
+- `frontend/COMPONENT_PATTERNS.md` - Component creation patterns
+- `frontend/API_PATTERNS.md` - API service patterns
+- `frontend/LAYOUT_GUIDELINES.md` - Layout standards
+- `frontend/REACT_HOOKS_GUIDELINES.md` - React hooks best practices
+
+### Architecture & Development
+- `ARCHITECTURE.md` - System architecture
+- `ARCHITECTURE_REVIEW_2024.md` - Architecture patterns
+- `DEVELOPMENT_ESSENTIALS.md` - Development needs
+- `API_REFERENCE.md` - API endpoints
+
+## When Creating New Components
+1. **Check COMMON_MISTAKES.md** - Avoid known mistakes
+2. **Check frontend/COMPONENT_PATTERNS.md** - Follow correct patterns
+3. **Check existing similar components** - Find examples in codebase
+4. **Follow layout guidelines** - PageLayout, maxWidth
+5. **Use correct useEffect dependency patterns** - entity?.id, not entity
+6. **Use centralized notifications** - useNotification() hook, not local Alert state
+7. **Verify build succeeds** - Run `npm run build`
+8. **Test form inputs** - Ensure they don't reset while typing
+
+## When Creating New API Services
+1. **Check frontend/API_PATTERNS.md** - Follow correct patterns
+2. **Check existing API services** - See tenantApi.ts, authApi.ts for examples
+3. **Use apiGet/apiPost/etc** - Never use fetch directly
+4. **Include TypeScript types** - Type safety is critical
+5. **Handle errors properly** - Use try/catch with error messages
+
+## Common Mistakes to Avoid
+- ❌ Using [entity, reset] in useEffect (use [entity?.id, reset])
+- ❌ Using Container directly (use PageLayout)
+- ❌ maxWidth="lg" in pages (use maxWidth="md")
+- ❌ Nested maxWidth constraints
+- ❌ Not verifying build after changes
+- ❌ Creating API services without checking patterns
+- ❌ Creating local Alert/Snackbar state (use useNotification() hook)
+- ❌ Hardcoding values instead of using config
+- ❌ Business logic in routers (use services)
+- See COMMON_MISTAKES.md for complete list with examples
+
+

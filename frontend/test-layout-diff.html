@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Layout Comparison</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .before { border: 2px solid red; padding: 10px; margin: 10px 0; }
+    .after { border: 2px solid green; padding: 10px; margin: 10px 0; }
+    h3 { margin-top: 0; }
+  </style>
+</head>
+<body>
+  <h1>PageLayout Migration - What Changed</h1>
+  
+  <div class="before">
+    <h3>❌ BEFORE (Manual Header)</h3>
+    <pre>
+&lt;PageLayout maxWidth="md"&gt;
+  &lt;Box display="flex" justifyContent="space-between" mb={3}&gt;
+    &lt;Typography variant="h4"&gt;My Tenants&lt;/Typography&gt;
+    &lt;Button&gt;Create Tenant&lt;/Button&gt;
+  &lt;/Box&gt;
+  {/* content */}
+&lt;/PageLayout&gt;
+    </pre>
+    <p><strong>Issues:</strong> Inconsistent across pages, harder to maintain</p>
+  </div>
+
+  <div class="after">
+    <h3>✅ AFTER (Standardized API)</h3>
+    <pre>
+&lt;PageLayout 
+  maxWidth="md"
+  title="My Tenants"
+  actions={&lt;Button&gt;Create Tenant&lt;/Button&gt;}
+&gt;
+  {/* content */}
+&lt;/PageLayout&gt;
+    </pre>
+    <p><strong>Benefits:</strong> Consistent, maintainable, responsive by default</p>
+  </div>
+
+  <h2>Visual Differences to Check:</h2>
+  <ol>
+    <li><strong>Mobile View:</strong> Resize browser to mobile width - header should stack vertically</li>
+    <li><strong>Spacing:</strong> All pages should have consistent spacing between header and content</li>
+    <li><strong>Tenant Settings:</strong> Tabs should appear below header, above content</li>
+  </ol>
+</body>
+</html>
